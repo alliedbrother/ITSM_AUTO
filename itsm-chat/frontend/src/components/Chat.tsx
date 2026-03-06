@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, RotateCcw, Sparkles, Zap, ArrowRight } from 'lucide-react'
+import { RotateCcw, Sparkles, Zap, ArrowRight } from 'lucide-react'
 import { useChatApi } from '../hooks/useChatApi'
 import ChatMessage from './ChatMessage'
 import QuickReply from './QuickReply'
