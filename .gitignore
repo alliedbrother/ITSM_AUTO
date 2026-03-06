@@ -32,3 +32,6 @@ temp_*.json
 
 # Claude cache
 .claude/
+
+# Setup scripts with secrets
+ec2-setup.sh
