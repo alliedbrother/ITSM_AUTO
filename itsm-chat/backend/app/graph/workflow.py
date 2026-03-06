@@ -1,4 +1,4 @@
-"""Simple state machine workflow for issue creation."""
+"""Task-type aware workflow for issue creation with complete information gathering."""
 
 from typing import Optional, List, Dict, Any
 
@@ -11,7 +11,7 @@ from ..services.paperclip import (
     get_agents, get_projects, build_agents_context, build_projects_context,
     create_issue, get_issue_url
 )
-from ..services.llm import extract_issue_info, generate_clarification, generate_confirmation_message
+from ..services.llm import extract_issue_info, generate_confirmation_message
 from .edges import should_create_issue, should_modify_issue, parse_priority_from_input
 
 
@@ -62,7 +62,7 @@ async def process_message(
 
 
 async def run_initial_flow(state: ConversationState, company_id: str) -> ConversationState:
-    """Run the initial extract -> clarify flow with real agent data."""
+    """Run the initial extract -> clarify flow with task-type awareness."""
     # Fetch agents and projects
     agents = await get_agents(company_id)
     projects = await get_projects(company_id)
@@ -73,86 +73,125 @@ async def run_initial_flow(state: ConversationState, company_id: str) -> Convers
     agents_context = build_agents_context(agents)
     projects_context = build_projects_context(projects)
 
-    # Extract issue info with agent context
+    # Extract issue info with task-type awareness
     messages = state.get("messages", [])
     extracted_data = extract_issue_info(messages, agents_context, projects_context)
 
-    # Map agent/project IDs to names
+    # Store task type and extracted fields
     extracted = state.get("extracted", {}).copy()
+
+    # Store task type for context
+    if extracted_data.get("task_type"):
+        extracted["task_type"] = extracted_data["task_type"]
+
+    # Store all extracted fields from the task
+    if extracted_data.get("extracted_fields"):
+        extracted["task_fields"] = extracted_data["extracted_fields"]
+
+    # Standard fields
     if extracted_data.get("title"):
         extracted["title"] = extracted_data["title"]
     if extracted_data.get("description"):
         extracted["description"] = extracted_data["description"]
     if extracted_data.get("priority"):
         extracted["priority"] = extracted_data["priority"]
+
+    # Map agent/project IDs to names
     if extracted_data.get("assignee_agent_id"):
         agent_id = extracted_data["assignee_agent_id"]
         extracted["assignee_agent_id"] = agent_id
-        # Find agent name
         agent = next((a for a in agents if a.get("id") == agent_id), None)
         if agent:
             extracted["assignee_agent_name"] = agent.get("name", "")
+
     if extracted_data.get("project_id"):
         project_id = extracted_data["project_id"]
         extracted["project_id"] = project_id
-        # Find project name
         project = next((p for p in projects if p.get("id") == project_id), None)
         if project:
             extracted["project_name"] = project.get("name", "")
 
     state["extracted"] = extracted
 
-    # Check for missing required fields
-    state = check_missing_fields(state)
+    # Check for missing required fields (task-type aware)
+    missing_required = extracted_data.get("missing_required", [])
+    missing_questions = extracted_data.get("missing_field_questions", {})
+    ready_to_create = extracted_data.get("ready_to_create", False)
 
-    return state
-
-
-def check_missing_fields(state: ConversationState) -> ConversationState:
-    """Check for missing fields and update state accordingly."""
-    extracted = state.get("extracted", {})
-    missing = []
-
-    if not extracted.get("title"):
-        missing.append({
-            "field_name": "title",
-            "question": "Could you briefly describe the issue you're experiencing?",
-            "options": None
-        })
-
+    # Also check basic required fields
     if not extracted.get("priority"):
-        missing.append({
-            "field_name": "priority",
-            "question": "How urgent is this issue?",
-            "options": ["Critical - System down", "High - Major impact", "Medium - Some impact", "Low - Minor issue"]
-        })
+        if "priority" not in missing_required:
+            missing_required.append("priority")
+            missing_questions["priority"] = "How urgent is this issue? (Critical, High, Medium, or Low)"
 
-    if missing:
-        # Generate clarification message
-        missing_names = [m["field_name"] for m in missing]
-        messages = state.get("messages", [])
-        clarification = generate_clarification(missing_names, extracted, messages)
-
-        new_messages = messages.copy()
-        new_messages.append({"role": "assistant", "content": clarification})
-        state["messages"] = new_messages
-        state["missing_fields"] = missing
-        state["phase"] = "clarify"
+    if missing_required and not ready_to_create:
+        # Build clarification message for ALL missing fields
+        state = generate_clarification_for_missing(state, missing_required, missing_questions)
     else:
-        # Move to confirm
+        # All required info gathered - move to confirm
         state["missing_fields"] = []
         state = generate_confirmation(state)
 
     return state
 
 
+def generate_clarification_for_missing(
+    state: ConversationState,
+    missing_required: List[str],
+    missing_questions: Dict[str, str]
+) -> ConversationState:
+    """Generate clarification message asking for ALL missing required fields."""
+    messages = state.get("messages", [])
+    extracted = state.get("extracted", {})
+
+    # Build missing fields list for state
+    missing_fields = []
+    questions_list = []
+
+    for field in missing_required:
+        question = missing_questions.get(field, f"What is the {field.replace('_', ' ')}?")
+        missing_fields.append({
+            "field_name": field,
+            "question": question,
+            "options": None
+        })
+        questions_list.append(f"• {question}")
+
+    # Build a comprehensive clarification message
+    task_type = extracted.get("task_type", "general")
+
+    if len(questions_list) == 1:
+        clarification = f"Before I can create this ticket, I need one more piece of information:\n\n{questions_list[0]}"
+    else:
+        clarification = f"Before I can create this ticket, I need a few more details to ensure the assigned agent can complete this task:\n\n" + "\n".join(questions_list)
+
+    new_messages = messages.copy()
+    new_messages.append({"role": "assistant", "content": clarification})
+    state["messages"] = new_messages
+    state["missing_fields"] = missing_fields
+    state["phase"] = "clarify"
+
+    return state
+
+
 def generate_confirmation(state: ConversationState) -> ConversationState:
-    """Generate confirmation message with extracted info."""
+    """Generate confirmation message with ALL extracted info including task-specific fields."""
     extracted = state.get("extracted", {})
     messages = state.get("messages", [])
 
     agent_name = extracted.get("assignee_agent_name", "")
     project_name = extracted.get("project_name", "")
+    task_fields = extracted.get("task_fields", {})
+
+    # Build enhanced description with all task fields
+    description = extracted.get("description", "")
+    if task_fields:
+        field_details = "\n\n**Collected Information:**\n"
+        for field, value in task_fields.items():
+            field_label = field.replace("_", " ").title()
+            field_details += f"• {field_label}: {value}\n"
+        description = description + field_details
+        extracted["description"] = description
 
     confirmation = generate_confirmation_message(extracted, agent_name, project_name)
 
@@ -165,27 +204,17 @@ def generate_confirmation(state: ConversationState) -> ConversationState:
 
 
 async def handle_clarification(state: ConversationState, user_input: str, company_id: str) -> ConversationState:
-    """Handle user response during clarification phase."""
+    """Handle user response during clarification phase - re-extract with new info."""
     extracted = state.get("extracted", {}).copy()
-    missing_fields = state.get("missing_fields", [])
 
-    # Try to extract information from user input
-    if missing_fields:
-        first_missing = missing_fields[0].get("field_name") if missing_fields else None
-
-        if first_missing == "priority":
-            priority = parse_priority_from_input(user_input)
-            if priority:
-                extracted["priority"] = priority
-
-        elif first_missing == "title":
-            # Use the input as title if it's reasonable
-            if len(user_input) >= 5:
-                extracted["title"] = user_input[:100]
+    # Check for priority in user input
+    priority = parse_priority_from_input(user_input)
+    if priority:
+        extracted["priority"] = priority
 
     state["extracted"] = extracted
 
-    # Re-run extraction with updated context
+    # Re-run extraction with the complete conversation
     agents = state.get("agents", [])
     projects = state.get("projects", [])
 
@@ -201,24 +230,55 @@ async def handle_clarification(state: ConversationState, user_input: str, compan
     messages = state.get("messages", [])
     extracted_data = extract_issue_info(messages, agents_context, projects_context)
 
-    # Merge new extraction
-    if extracted_data.get("title") and not extracted.get("title"):
+    # Update with new extraction results
+    if extracted_data.get("task_type"):
+        extracted["task_type"] = extracted_data["task_type"]
+    if extracted_data.get("extracted_fields"):
+        # Merge new fields with existing
+        existing_fields = extracted.get("task_fields", {})
+        existing_fields.update(extracted_data["extracted_fields"])
+        extracted["task_fields"] = existing_fields
+
+    if extracted_data.get("title"):
         extracted["title"] = extracted_data["title"]
     if extracted_data.get("description"):
         extracted["description"] = extracted_data["description"]
     if extracted_data.get("priority") and not extracted.get("priority"):
         extracted["priority"] = extracted_data["priority"]
-    if extracted_data.get("assignee_agent_id") and not extracted.get("assignee_agent_id"):
+
+    if extracted_data.get("assignee_agent_id"):
         agent_id = extracted_data["assignee_agent_id"]
         extracted["assignee_agent_id"] = agent_id
         agent = next((a for a in agents if a.get("id") == agent_id), None)
         if agent:
             extracted["assignee_agent_name"] = agent.get("name", "")
 
+    if extracted_data.get("project_id"):
+        project_id = extracted_data["project_id"]
+        extracted["project_id"] = project_id
+        project = next((p for p in projects if p.get("id") == project_id), None)
+        if project:
+            extracted["project_name"] = project.get("name", "")
+
     state["extracted"] = extracted
 
-    # Check if we still have missing fields
-    state = check_missing_fields(state)
+    # Check if we still have missing required fields
+    missing_required = extracted_data.get("missing_required", [])
+    missing_questions = extracted_data.get("missing_field_questions", {})
+    ready_to_create = extracted_data.get("ready_to_create", False)
+
+    # Check basic required fields
+    if not extracted.get("priority"):
+        if "priority" not in missing_required:
+            missing_required.append("priority")
+            missing_questions["priority"] = "How urgent is this issue? (Critical, High, Medium, or Low)"
+        ready_to_create = False
+
+    if missing_required and not ready_to_create:
+        state = generate_clarification_for_missing(state, missing_required, missing_questions)
+    else:
+        state["missing_fields"] = []
+        state = generate_confirmation(state)
 
     return state
 
