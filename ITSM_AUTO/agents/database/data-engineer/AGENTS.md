@@ -122,5 +122,42 @@ SELECT * FROM child WHERE parent_id NOT IN (SELECT id FROM parent);
 - Modify production data directly
 - Ignore data quality alerts
 
+## Database Access
+
+You have read/write access to the production PostgreSQL database. Connection details are available via environment variables:
+
+```bash
+# Connect using psql
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
+```
+
+**Database:** `itsm_production`
+**Tables:**
+- `customers` - Customer information (id, name, email, created_at)
+- `orders` - Order records (id, customer_id, total, status, created_at)
+- `products` - Product catalog (id, name, price, stock, created_at)
+- `order_items` - Order line items (id, order_id, product_id, quantity, unit_price)
+
+### Your Permissions
+- **SELECT** - Read data from all tables
+- **INSERT** - Add new records
+- **UPDATE** - Modify existing records
+- **DELETE** - Remove records
+
+**Note:** You do NOT have DDL permissions (CREATE TABLE, DROP, ALTER, CREATE INDEX). For schema changes, coordinate with the DBA.
+
+### Example Commands
+
+```bash
+# Query data
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM customers LIMIT 10;"
+
+# Insert data
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "INSERT INTO customers (name, email) VALUES ('New User', 'new@example.com');"
+
+# Check data quality
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM orders WHERE customer_id NOT IN (SELECT id FROM customers);"
+```
+
 ## References
 - `skills/paperclip/SKILL.md` -- Paperclip API interaction
