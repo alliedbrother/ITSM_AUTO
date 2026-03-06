@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T19:58:41.987898",
+  "to": "hr-team@company.com",
+  "from": "not_configured",
+  "subject": "Onboarding Checklist for Sai",
+  "body": "\nHello Team,\n\nNew employee onboarding initiated for: Sai\nStart Date: 2026-03-10\nDepartment: Engineering\n\nOnboarding Checklist:\n[ ] Create email account\n[ ] Setup workstation\n[ ] Provision access badges\n[ ] Schedule orientation\n[ ] Assign onboarding buddy\n[ ] Prepare welcome kit\n\nPlease complete your assigned tasks before the start date.\n\nBest regards,\nOnboarding Specialist\nAutonomous ITSM\n",
+  "result": {
+    "success": false,
+    "error": "Gmail credentials not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables."
+  }
+}

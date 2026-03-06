@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T18:39:06.676305",
+  "to": "saiakhil121@gmail.com",
+  "from": "saiakhil121@gmail.com",
+  "subject": "Welcome to the Team, Test User!",
+  "body": "\nHello Test User,\n\nWelcome to Autonomous ITSM! We're excited to have you join our team.\n\nYour onboarding has been initiated and you should expect:\n- IT equipment setup on your first day\n- Access credentials via separate secure email\n- Orientation schedule from your manager\n\nIf you have any questions before your start date, please don't hesitate to reach out.\n\nBest regards,\nThe HR Team\nAutonomous ITSM\n",
+  "result": {
+    "success": true,
+    "message": "Email sent to saiakhil121@gmail.com"
+  }
+}

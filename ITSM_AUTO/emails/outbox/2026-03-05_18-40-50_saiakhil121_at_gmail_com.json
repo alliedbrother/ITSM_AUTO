@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T18:40:50.216242",
+  "to": "saiakhil121@gmail.com",
+  "from": "saiakhil121@gmail.com",
+  "subject": "Onboarding Checklist for New Hire",
+  "body": "\nHello Team,\n\nNew employee onboarding initiated for: New Hire\nStart Date: March 10, 2026\nDepartment: Engineering\n\nOnboarding Checklist:\n[ ] Create email account\n[ ] Setup workstation\n[ ] Provision access badges\n[ ] Schedule orientation\n[ ] Assign onboarding buddy\n[ ] Prepare welcome kit\n\nPlease complete your assigned tasks before the start date.\n\nBest regards,\nOnboarding Specialist\nAutonomous ITSM\n",
+  "result": {
+    "success": true,
+    "message": "Email sent to saiakhil121@gmail.com"
+  }
+}

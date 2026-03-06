@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T19:58:34.254638",
+  "to": "saikogilathota@gmail.com",
+  "from": "not_configured",
+  "subject": "Welcome to the Team, Sai!",
+  "body": "\nHello Sai,\n\nWelcome to Autonomous ITSM! We're excited to have you join our team.\n\nYour onboarding has been initiated and you should expect:\n- IT equipment setup on your first day\n- Access credentials via separate secure email\n- Orientation schedule from your manager\n\nIf you have any questions before your start date, please don't hesitate to reach out.\n\nBest regards,\nThe HR Team\nAutonomous ITSM\n",
+  "result": {
+    "success": false,
+    "error": "Gmail credentials not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables."
+  }
+}

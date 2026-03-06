@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T18:40:22.826239",
+  "to": "saiakhil121@gmail.com",
+  "from": "saiakhil121@gmail.com",
+  "subject": "PTO Request Approved - March 15-20, 2026",
+  "body": "\nHello Sai Akhil,\n\nGreat news! Your PTO request has been approved.\n\nDetails:\n- Dates: March 15-20, 2026\n- Days: 5\n\nPlease ensure your responsibilities are covered during your absence. Enjoy your time off!\n\nBest regards,\nHR Coordinator\nAutonomous ITSM\n",
+  "result": {
+    "success": true,
+    "message": "Email sent to saiakhil121@gmail.com"
+  }
+}

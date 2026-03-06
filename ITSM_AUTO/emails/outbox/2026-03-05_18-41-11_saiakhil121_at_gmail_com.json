@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-05T18:41:11.712839",
+  "to": "saiakhil121@gmail.com",
+  "from": "saiakhil121@gmail.com",
+  "subject": "PTO Request Update - Action Required",
+  "body": "\nHello Sai Akhil,\n\nUnfortunately, your PTO request for Dec 24-31 could not be approved at this time.\n\nReason: Holiday blackout period - all hands on deck\n\nPlease contact HR to discuss alternative dates or arrangements.\n\nBest regards,\nHR Coordinator\nAutonomous ITSM\n",
+  "result": {
+    "success": true,
+    "message": "Email sent to saiakhil121@gmail.com"
+  }
+}
