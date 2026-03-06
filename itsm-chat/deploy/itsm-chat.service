@@ -6,8 +6,8 @@ After=network.target
 Type=simple
 User=paperclip
 WorkingDirectory=/home/paperclip/app/itsm-chat/backend
-Environment=PATH=/home/paperclip/.local/bin:/usr/bin
-ExecStart=/home/paperclip/.local/bin/uvicorn app.main:app --host 0.0.0.0 --port 8100
+Environment=PATH=/home/paperclip/app/itsm-chat/backend/venv/bin:/usr/bin
+ExecStart=/home/paperclip/app/itsm-chat/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8100
 Restart=always
 RestartSec=10
 
