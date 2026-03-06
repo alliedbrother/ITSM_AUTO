@@ -37,16 +37,44 @@ Handle active security incidents: investigation, containment, eradication, and r
 3. Disable compromised accounts
 4. Preserve evidence before changes
 
+## AWS Access - Containment Commands
+
+You have full incident response capabilities in AWS.
+
 ```bash
-# Example containment commands
-# Block IP at firewall
-iptables -A INPUT -s MALICIOUS_IP -j DROP
+# === ACCOUNT CONTAINMENT ===
+# Disable compromised user console access
+aws iam delete-login-profile --user-name COMPROMISED_USER
 
-# Disable compromised user
-aws iam update-login-profile --user-name COMPROMISED_USER --password-reset-required
+# Disable all access keys for user
+aws iam list-access-keys --user-name COMPROMISED_USER
+aws iam update-access-key --user-name COMPROMISED_USER --access-key-id AKIAXXXXX --status Inactive
 
-# Isolate instance
-aws ec2 modify-instance-attribute --instance-id INSTANCE_ID --no-source-dest-check
+# === EC2 CONTAINMENT ===
+# Stop compromised instance
+aws ec2 stop-instances --instance-ids i-xxxxx
+
+# Create isolation security group (no inbound/outbound)
+aws ec2 create-security-group --group-name incident-isolation --description "Incident isolation - no traffic"
+aws ec2 revoke-security-group-egress --group-id sg-isolation --ip-permissions '[{"IpProtocol":"-1","IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]'
+
+# Attach isolation security group to instance
+aws ec2 modify-instance-attribute --instance-id i-xxxxx --groups sg-isolation
+
+# === SECURITY GROUP MODIFICATIONS ===
+# Block malicious IP
+aws ec2 revoke-security-group-ingress --group-id sg-xxxxx --protocol tcp --port 0-65535 --cidr MALICIOUS_IP/32
+
+# === FORENSICS ===
+# Get CloudTrail events for compromised user
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=Username,AttributeValue=COMPROMISED_USER --max-results 50
+
+# Get GuardDuty findings
+aws guardduty list-findings --detector-id <detector-id> --finding-criteria '{"Criterion":{"severity":{"Gte":7}}}'
+aws guardduty get-findings --detector-id <detector-id> --finding-ids <finding-id>
+
+# Archive handled findings
+aws guardduty archive-findings --detector-id <detector-id> --finding-ids <finding-id>
 ```
 
 ### Phase 3: Investigation
@@ -119,5 +147,28 @@ aws ec2 modify-instance-attribute --instance-id INSTANCE_ID --no-source-dest-che
 - Make assumptions about attack scope
 - Skip documentation during incident
 
+## Out-of-Scope Task Handling
+
+Focus only on active incidents. Non-incident tasks should be delegated.
+
+### Delegate to Security Analyst
+- Vulnerability assessments (not active exploits)
+- Access reviews
+- General security questions
+
+### Delegate to Compliance Officer
+- Audit preparation
+- Policy documentation
+- Regulatory questions
+
+### Escalate to VP Security
+- P1/P2 incidents requiring executive notification
+- Customer data potentially affected
+- Legal/regulatory implications
+- Need to take critical systems offline
+
+See `AGENTS_DIRECTORY.md` for the full agent directory.
+
 ## References
 - `skills/paperclip/SKILL.md` -- Paperclip API interaction
+- `AGENTS_DIRECTORY.md` -- Full agent directory for delegation

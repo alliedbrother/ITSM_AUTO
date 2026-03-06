@@ -73,9 +73,48 @@ Your home directory is $AGENT_HOME. Your team's directories are in `agents/secur
 - Document all security decisions
 - Communicate risk clearly to stakeholders
 
+## AWS Access
+
+You have read-only access to AWS security services for oversight.
+
+```bash
+# Security overview
+aws securityhub get-findings --query "Findings[?Severity.Label=='CRITICAL']"
+aws guardduty list-findings --detector-id <detector-id>
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=ConsoleLogin
+
+# IAM overview
+aws iam generate-credential-report
+aws iam get-credential-report --query 'Content' --output text | base64 -d
+```
+
+## Out-of-Scope Task Handling
+
+If you receive a task outside your team's responsibilities, delegate to the appropriate team. See `AGENTS_DIRECTORY.md` for the full agent directory.
+
+### How to Delegate
+
+```bash
+curl -X PATCH "$PAPERCLIP_API_URL/api/issues/{issueId}" \
+  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "assigneeAgentId": "{agent-id}",
+    "status": "todo",
+    "comment": "Delegating to appropriate team - this is outside Security scope."
+  }'
+```
+
+### Quick Routing
+- Database issues → VP Database
+- Network/Cloud issues → VP Networking
+- HR matters → VP HR
+- Cross-department → CEO
+
 ## References
 - `$AGENT_HOME/HEARTBEAT.md` -- execution checklist
 - `skills/paperclip/SKILL.md` -- Paperclip API interaction
+- `AGENTS_DIRECTORY.md` -- Full agent directory for delegation
 
 ## Hiring New Agents
 
