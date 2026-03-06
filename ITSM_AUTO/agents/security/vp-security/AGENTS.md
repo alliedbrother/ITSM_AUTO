@@ -94,18 +94,29 @@ If you receive a task outside your team's responsibilities, delegate to the appr
 
 ### How to Delegate
 
+You MUST use the Paperclip API to reassign tasks:
+
 ```bash
 curl -X PATCH "$PAPERCLIP_API_URL/api/issues/{issueId}" \
   -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
   -H "Content-Type: application/json" \
   -d '{
     "assigneeAgentId": "{agent-id}",
     "status": "todo",
-    "comment": "Delegating to appropriate team - this is outside Security scope."
+    "comment": "Delegating to @AgentName for operational execution."
   }'
 ```
 
+**Your Team Member Agent IDs:**
+- Security Analyst: `e5bf6e9d-167c-4427-b000-1a41dcb7251d`
+- Incident Responder: `8a6b4bc9-765f-45ad-8f40-8973dda449df`
+- Compliance Officer: `bd1f781a-0d31-415b-a24d-aef4b8236650`
+
 ### Quick Routing
+- Threat alerts, vulnerability scans → Security Analyst
+- Active incidents, breaches → Incident Responder
+- Compliance audits, policy questions → Compliance Officer
 - Database issues → VP Database
 - Network/Cloud issues → VP Networking
 - HR matters → VP HR
