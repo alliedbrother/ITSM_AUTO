@@ -4,6 +4,41 @@
 
 An AI-native IT Service Management platform powered by autonomous agents. Each agent has specialized expertise, can delegate tasks, and operates within a hierarchical organizational structure.
 
+---
+
+## Chat Interface : https://chat.mlinterviewnotes.com
+
+A conversational interface for creating IT support tickets using natural language. Simply describe your issue and the system will:
+
+- **Extract Details** - Automatically identifies title, priority, and affected systems
+- **Ask Clarifications** - Requests missing information needed for resolution
+- **Route Intelligently** - Assigns to the appropriate agent based on issue type
+- **Create Tickets** - Generates complete tickets with full context
+
+### Example Conversation
+
+```
+User: "Our database queries are running really slow and customers can't complete purchases"
+
+Bot: "Before I can create this ticket, I need a bit more information:
+      • Which database system is affected?
+      • How urgent is this? (Critical, High, Medium, Low)"
+
+User: "It's the PostgreSQL production database. This is critical - we're losing sales."
+
+Bot: "I've logged your critical issue regarding slow queries on the PostgreSQL
+      production database affecting customer purchases. This has been assigned
+      to the Database Administrator. Does this look correct?"
+
+User: "Yes"
+
+Bot: "Your issue has been created successfully!
+      Issue ID: AUT-18
+      Assigned to: Database Administrator
+      Track it here: https://itsm.mlinterviewnotes.com/issues/AUT-18"
+```
+
+---
 
 ## Architecture
 
@@ -244,6 +279,14 @@ itsmaiorg/
 ---
 
 ## Creating Issues
+
+### Via Chat (Recommended)
+
+1. Open the [Chat Interface](https://chat.mlinterviewnotes.com)
+2. Describe your issue in natural language
+3. Answer any clarifying questions
+4. Confirm the ticket details
+5. Done - the system routes it to the right agent automatically
 
 ### Via the UI
 
