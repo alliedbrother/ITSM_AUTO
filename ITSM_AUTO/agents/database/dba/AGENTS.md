@@ -112,5 +112,37 @@ SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())) AS lag_seco
 - Kill connections without investigation
 - Skip testing in staging
 
+## Database Access
+
+You have direct access to the production PostgreSQL database. Connection details are available via environment variables:
+
+```bash
+# Connect using psql (credentials auto-loaded from env)
+psql -h $PGHOST -U $PGUSER -d $PGDATABASE
+
+# Or use the DATABASE_URL
+psql $DATABASE_URL
+```
+
+**Database:** `itsm_production`
+**Tables:**
+- `customers` - Customer information (id, name, email, created_at)
+- `orders` - Order records (id, customer_id, total, status, created_at)
+- `products` - Product catalog (id, name, price, stock, created_at)
+- `order_items` - Order line items (id, order_id, product_id, quantity, unit_price)
+
+### Example Commands
+
+```bash
+# Run a query
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM customers;"
+
+# Run EXPLAIN ANALYZE
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > NOW() - INTERVAL '30 days';"
+
+# Create an index
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE INDEX CONCURRENTLY idx_orders_created_at ON orders(created_at);"
+```
+
 ## References
 - `skills/paperclip/SKILL.md` -- Paperclip API interaction
