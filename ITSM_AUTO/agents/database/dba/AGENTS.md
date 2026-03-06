@@ -114,34 +114,73 @@ SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())) AS lag_seco
 
 ## Database Access
 
-You have direct access to the production PostgreSQL database. Connection details are available via environment variables:
+You have **superuser** access to PostgreSQL with full administrative privileges.
 
+### Connection
 ```bash
-# Connect using psql (credentials auto-loaded from env)
-psql -h $PGHOST -U $PGUSER -d $PGDATABASE
+# Connect to default database
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
 
-# Or use the DATABASE_URL
-psql $DATABASE_URL
+# Connect to any database
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d <database_name>
+
+# Connect to postgres for admin tasks
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres
 ```
 
-**Database:** `itsm_production`
+### Your Permissions
+- **SUPERUSER** - Full administrative access
+- **CREATEROLE** - Create and manage database users
+- **CREATEDB** - Create and drop databases
+- **Full DDL** - CREATE/ALTER/DROP tables, indexes, schemas
+
+### Current Database: `itsm_production`
 **Tables:**
 - `customers` - Customer information (id, name, email, created_at)
 - `orders` - Order records (id, customer_id, total, status, created_at)
 - `products` - Product catalog (id, name, price, stock, created_at)
 - `order_items` - Order line items (id, order_id, product_id, quantity, unit_price)
 
-### Example Commands
+### User Management
 
 ```bash
-# Run a query
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM customers;"
+# Create a new user with password
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "CREATE USER new_user WITH PASSWORD 'secure_password';"
+
+# Grant read-only access
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d itsm_production -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO new_user;"
+
+# Grant read-write access
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d itsm_production -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO new_user;"
+
+# List all users
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "SELECT rolname, rolsuper, rolcreaterole, rolcreatedb FROM pg_roles WHERE rolcanlogin = true;"
+```
+
+### Database Management
+
+```bash
+# Create a new database
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "CREATE DATABASE new_database OWNER dba_agent;"
+
+# List all databases
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"
+
+# Grant user access to database
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "GRANT CONNECT ON DATABASE new_database TO some_user;"
+```
+
+### Table Management
+
+```bash
+# Create a new table
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE TABLE new_table (id SERIAL PRIMARY KEY, name VARCHAR(100), created_at TIMESTAMP DEFAULT NOW());"
+
+# Create an index
+PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE INDEX CONCURRENTLY idx_name ON table_name(column);"
 
 # Run EXPLAIN ANALYZE
 PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > NOW() - INTERVAL '30 days';"
-
-# Create an index
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE INDEX CONCURRENTLY idx_orders_created_at ON orders(created_at);"
 ```
 
 ## References
