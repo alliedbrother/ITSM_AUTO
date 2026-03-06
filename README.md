@@ -240,26 +240,6 @@ itsmaiorg/
 
 ---
 
-## Quick Reference
-
-| Need Help With... | Contact |
-|-------------------|---------|
-| Security alert | Security Analyst |
-| Active breach | Incident Responder |
-| Compliance/audit | Compliance Officer |
-| Slow database | DBA |
-| Data pipeline | Data Engineer |
-| Backup/restore | Backup Specialist |
-| Network issue | Network Engineer |
-| Server problem | SysAdmin |
-| Cloud infrastructure | Cloud Specialist |
-| New hire setup | Onboarding Specialist |
-| HR question | HR Coordinator |
-| Employee issue | Employee Relations |
-| Cross-department | CEO |
-
----
-
 ## License
 
 Proprietary - Autonomous ITSM
