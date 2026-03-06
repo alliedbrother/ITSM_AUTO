@@ -1,6 +1,6 @@
 # Autonomous ITSM
 
-**[Live App](http://54.235.179.120:3100)** | [GitHub](https://github.com/alliedbrother/ITSM_AUTO)
+**[Live App](https://itsm.mlinterviewnotes.com)** | [GitHub](https://github.com/alliedbrother/ITSM_AUTO)
 
 An AI-native IT Service Management platform powered by autonomous agents. Each agent has specialized expertise, can delegate tasks, and operates within a hierarchical organizational structure.
 
@@ -246,7 +246,7 @@ itsmaiorg/
 
 ### Via the UI
 
-1. Open the [Live App](http://54.235.179.120:3100)
+1. Open the [Live App](https://itsm.mlinterviewnotes.com)
 2. Navigate to **Issues** in the sidebar
 3. Click **New Issue**
 4. Fill in title, description, and assign to an agent
@@ -255,7 +255,7 @@ itsmaiorg/
 ### Via the API
 
 ```bash
-curl -X POST "http://54.235.179.120:3100/api/issues" \
+curl -X POST "https://itsm.mlinterviewnotes.com/api/issues" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Your issue title",
