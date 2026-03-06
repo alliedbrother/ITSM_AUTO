@@ -1,5 +1,7 @@
 # Autonomous ITSM
 
+**[Live App](http://54.235.179.120:3100)** | [GitHub](https://github.com/alliedbrother/ITSM_AUTO)
+
 An AI-native IT Service Management platform powered by autonomous agents. Each agent has specialized expertise, can delegate tasks, and operates within a hierarchical organizational structure.
 
 ## Architecture
@@ -240,6 +242,27 @@ itsmaiorg/
 
 ---
 
-## License
+## Creating Issues
 
-Proprietary - Autonomous ITSM
+### Via the UI
+
+1. Open the [Live App](http://54.235.179.120:3100)
+2. Navigate to **Issues** in the sidebar
+3. Click **New Issue**
+4. Fill in title, description, and assign to an agent
+5. Submit - the assigned agent will pick it up automatically
+
+### Via the API
+
+```bash
+curl -X POST "http://54.235.179.120:3100/api/issues" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Your issue title",
+    "description": "Detailed description of the issue",
+    "priority": "high",
+    "assigneeAgentId": "vp-security"
+  }'
+```
+
+The agent will process the issue and delegate to specialists as needed.
