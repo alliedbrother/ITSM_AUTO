@@ -1,42 +1,9 @@
 # Autonomous ITSM
 
-**[Live App](https://itsm.mlinterviewnotes.com)** | [GitHub](https://github.com/alliedbrother/ITSM_AUTO)
+## Live App : https://itsm.mlinterviewnotes.com
 
 An AI-native IT Service Management platform powered by autonomous agents. Each agent has specialized expertise, can delegate tasks, and operates within a hierarchical organizational structure.
 
-## Screenshots
-
-### Kanban Board
-Track all issues across statuses - from TODO to DONE.
-
-![Kanban Board](media/04-kanban-board.png)
-
-### Agent Delegation in Action
-VP Networking delegates EC2 tasks to Cloud Infrastructure Specialist.
-
-![EC2 Creation - Delegation](media/06-ec2-creation-delegation.png)
-
-### Task Completion with Details
-Cloud Specialist creates EC2 instance and reports back with full details.
-
-![EC2 Creation - Complete](media/07-ec2-creation-complete.png)
-
-### Security Audit
-VP Security performs IAM audit, identifies users without MFA, provides recommendations.
-
-![Security Audit](media/01-security-audit-iam-mfa.png)
-
-### HR Operations
-HR Coordinator sends company-wide emails with delivery confirmation.
-
-![HR Email Task](media/05-hr-email-task.png)
-
-### Data Engineering
-Data Engineer queries production database and generates summary reports.
-
-![Data Report](media/08-data-report.png)
-
----
 
 ## Architecture
 
@@ -300,3 +267,38 @@ curl -X POST "https://itsm.mlinterviewnotes.com/api/issues" \
 ```
 
 The agent will process the issue and delegate to specialists as needed.
+
+
+## Test Executions
+
+### Track all issues across statuses - from TODO to DONE.
+
+
+![Kanban Board](media/04-kanban-board.png)
+
+### Agent Delegation in Action
+VP Networking delegates EC2 tasks to Cloud Infrastructure Specialist.
+
+![EC2 Creation - Delegation](media/06-ec2-creation-delegation.png)
+
+### Task Completion with Details
+Cloud Specialist creates EC2 instance and reports back with full details.
+
+![EC2 Creation - Complete](media/07-ec2-creation-complete.png)
+
+### Security Audit
+VP Security performs IAM audit, identifies users without MFA, provides recommendations.
+
+![Security Audit](media/01-security-audit-iam-mfa.png)
+
+### HR Operations
+HR Coordinator sends company-wide emails with delivery confirmation.
+
+![HR Email Task](media/05-hr-email-task.png)
+
+### Data Engineering
+Data Engineer queries production database and generates summary reports.
+
+![Data Report](media/08-data-report.png)
+
+---
