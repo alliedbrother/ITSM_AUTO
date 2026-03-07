@@ -135,11 +135,22 @@ SELECT * FROM child WHERE parent_id NOT IN (SELECT id FROM parent);
 
 ## Database Access
 
-You have read/write access to the production PostgreSQL database. Connection details are available via environment variables:
+You have read/write access to the production PostgreSQL database.
 
+### Connection Details
+- **Host:** 127.0.0.1
+- **Port:** 5432
+- **User:** data_engineer
+- **Password:** dataeng2026
+- **Database:** itsm_production
+
+### Connection Command
 ```bash
-# Connect using psql
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
+# Connect to database
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production
+
+# Run a query directly
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production -c "YOUR_QUERY_HERE"
 ```
 
 **Database:** `itsm_production`
@@ -148,6 +159,7 @@ PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
 - `orders` - Order records (id, customer_id, total, status, created_at)
 - `products` - Product catalog (id, name, price, stock, created_at)
 - `order_items` - Order line items (id, order_id, product_id, quantity, unit_price)
+- `employees` - Employee records (id, name, email, department, created_at)
 
 ### Your Permissions
 - **SELECT** - Read data from all tables
@@ -161,13 +173,16 @@ PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
 
 ```bash
 # Query data
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM customers LIMIT 10;"
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production -c "SELECT * FROM customers LIMIT 10;"
 
 # Insert data
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "INSERT INTO customers (name, email) VALUES ('New User', 'new@example.com');"
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production -c "INSERT INTO customers (name, email) VALUES ('New User', 'new@example.com');"
 
 # Check data quality
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "SELECT * FROM orders WHERE customer_id NOT IN (SELECT id FROM customers);"
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production -c "SELECT * FROM orders WHERE customer_id NOT IN (SELECT id FROM customers);"
+
+# Generate summary report
+PGPASSWORD=dataeng2026 psql -h 127.0.0.1 -U data_engineer -d itsm_production -c "SELECT COUNT(*) as total_orders, SUM(total) as revenue FROM orders;"
 ```
 
 ## References

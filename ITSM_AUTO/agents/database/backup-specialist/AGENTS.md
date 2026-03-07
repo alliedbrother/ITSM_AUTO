@@ -132,5 +132,37 @@ psql -d database_name -c "SELECT COUNT(*) FROM important_table;"
 - Restore to production without validation
 - Ignore backup failures
 
+## Database Access
+
+You have read-only access to the production PostgreSQL database for backup verification.
+
+### Connection Details
+- **Host:** 127.0.0.1
+- **Port:** 5432
+- **User:** dba_agent
+- **Password:** dba2026
+- **Database:** itsm_production
+
+### Connection Command
+```bash
+# Connect to database
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production
+
+# Verify backup by counting records
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "SELECT 'customers' as table_name, COUNT(*) FROM customers UNION ALL SELECT 'orders', COUNT(*) FROM orders UNION ALL SELECT 'products', COUNT(*) FROM products;"
+```
+
+### Backup Commands
+```bash
+# Create a backup
+pg_dump -h 127.0.0.1 -U dba_agent -d itsm_production -F c -f /backup/itsm_production_$(date +%Y%m%d).dump
+
+# List backups
+ls -la /backup/
+
+# Verify backup integrity
+pg_restore --list /backup/itsm_production_*.dump
+```
+
 ## References
 - `skills/paperclip/SKILL.md` -- Paperclip API interaction

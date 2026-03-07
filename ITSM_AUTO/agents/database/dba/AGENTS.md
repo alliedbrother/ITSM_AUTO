@@ -146,16 +146,23 @@ SELECT EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp())) AS lag_seco
 
 You have **superuser** access to PostgreSQL with full administrative privileges.
 
-### Connection
-```bash
-# Connect to default database
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE
+### Connection Details
+- **Host:** 127.0.0.1
+- **Port:** 5432
+- **User:** dba_agent
+- **Password:** dba2026
+- **Database:** itsm_production
 
-# Connect to any database
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d <database_name>
+### Connection Commands
+```bash
+# Connect to production database
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production
 
 # Connect to postgres for admin tasks
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres
+
+# Run a query directly
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "YOUR_QUERY_HERE"
 ```
 
 ### Your Permissions
@@ -175,42 +182,42 @@ PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres
 
 ```bash
 # Create a new user with password
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "CREATE USER new_user WITH PASSWORD 'secure_password';"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres -c "CREATE USER new_user WITH PASSWORD 'secure_password';"
 
 # Grant read-only access
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d itsm_production -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO new_user;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO new_user;"
 
 # Grant read-write access
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d itsm_production -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO new_user;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO new_user;"
 
 # List all users
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "SELECT rolname, rolsuper, rolcreaterole, rolcreatedb FROM pg_roles WHERE rolcanlogin = true;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres -c "SELECT rolname, rolsuper, rolcreaterole, rolcreatedb FROM pg_roles WHERE rolcanlogin = true;"
 ```
 
 ### Database Management
 
 ```bash
 # Create a new database
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "CREATE DATABASE new_database OWNER dba_agent;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres -c "CREATE DATABASE new_database OWNER dba_agent;"
 
 # List all databases
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"
 
 # Grant user access to database
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d postgres -c "GRANT CONNECT ON DATABASE new_database TO some_user;"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d postgres -c "GRANT CONNECT ON DATABASE new_database TO some_user;"
 ```
 
 ### Table Management
 
 ```bash
 # Create a new table
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE TABLE new_table (id SERIAL PRIMARY KEY, name VARCHAR(100), created_at TIMESTAMP DEFAULT NOW());"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "CREATE TABLE new_table (id SERIAL PRIMARY KEY, name VARCHAR(100), created_at TIMESTAMP DEFAULT NOW());"
 
 # Create an index
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "CREATE INDEX CONCURRENTLY idx_name ON table_name(column);"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "CREATE INDEX CONCURRENTLY idx_name ON table_name(column);"
 
 # Run EXPLAIN ANALYZE
-PGPASSWORD=$PGPASSWORD psql -h $PGHOST -U $PGUSER -d $PGDATABASE -c "EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > NOW() - INTERVAL '30 days';"
+PGPASSWORD=dba2026 psql -h 127.0.0.1 -U dba_agent -d itsm_production -c "EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > NOW() - INTERVAL '30 days';"
 ```
 
 ## References
