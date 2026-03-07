@@ -1,0 +1,11 @@
+Generic single-database configuration for Alembic with async support.
+
+To run migrations:
+  cd backend
+  alembic upgrade head
+
+To create a new migration:
+  alembic revision --autogenerate -m "Description of changes"
+
+To downgrade:
+  alembic downgrade -1

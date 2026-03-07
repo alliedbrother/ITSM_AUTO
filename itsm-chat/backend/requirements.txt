@@ -5,3 +5,20 @@ pydantic>=2.6.0
 pydantic-settings>=2.1.0
 httpx>=0.26.0
 python-multipart>=0.0.6
+email-validator>=2.0.0
+
+# Database
+asyncpg>=0.29.0
+sqlalchemy[asyncio]>=2.0.25
+alembic>=1.13.1
+
+# LangGraph Persistence
+langgraph>=0.2.0
+langgraph-checkpoint-postgres>=2.0.0
+
+# Auth
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# WebSocket
+websockets>=12.0

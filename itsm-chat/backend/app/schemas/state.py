@@ -47,6 +47,7 @@ class CreatedIssue(BaseModel):
 class ConversationState(TypedDict, total=False):
     """The state of a conversation in the LangGraph workflow."""
     session_id: str
+    user_id: Optional[str]  # UUID of authenticated user (None for unauthenticated)
     messages: List[dict]  # List of Message dicts
     phase: Phase
     extracted: dict  # ExtractedInfo as dict
@@ -58,10 +59,11 @@ class ConversationState(TypedDict, total=False):
     projects: List[dict]  # Cached projects
 
 
-def create_initial_state(company_id: str) -> ConversationState:
+def create_initial_state(company_id: str, user_id: Optional[str] = None) -> ConversationState:
     """Create a new conversation state."""
     return ConversationState(
         session_id=str(uuid.uuid4()),
+        user_id=user_id,
         messages=[],
         phase="classify",
         extracted={},
@@ -80,7 +82,7 @@ class ChatRequest(BaseModel):
     """Request body for chat message endpoint."""
     message: str
     session_id: Optional[str] = None
-    company_id: str
+    company_id: Optional[str] = None  # Optional if authenticated (uses user's company)
 
 
 class QuickReply(BaseModel):

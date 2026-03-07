@@ -1,4 +1,9 @@
-import { useState, useCallback } from 'react'
+/**
+ * Chat API hook with authentication support
+ */
+
+import { useState, useCallback, useEffect } from 'react'
+import { api } from '../lib/api'
 
 export interface QuickReply {
   label: string
@@ -35,7 +40,6 @@ export interface Message {
   content: string
 }
 
-const API_URL = import.meta.env.VITE_CHAT_API_URL || '/api/chat'
 const COMPANY_ID = import.meta.env.VITE_COMPANY_ID || ''
 
 export function useChatApi() {
@@ -47,6 +51,41 @@ export function useChatApi() {
   const [phase, setPhase] = useState<string>('classify')
   const [error, setError] = useState<string | null>(null)
 
+  // Check for resume session on mount
+  useEffect(() => {
+    const resumeId = sessionStorage.getItem('resumeSessionId')
+    if (resumeId) {
+      sessionStorage.removeItem('resumeSessionId')
+      loadConversation(resumeId)
+    }
+  }, [])
+
+  const loadConversation = async (convSessionId: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const data = await api.getConversation(convSessionId)
+
+      setSessionId(data.session_id)
+      setMessages(data.messages || [])
+      setPhase(data.phase || 'classify')
+      setCreatedIssue(data.created_issue || null)
+
+      // Clear quick replies when loading existing conversation
+      setQuickReplies([])
+
+      if (data.error) {
+        setError(data.error)
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load conversation'
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isLoading) return
 
@@ -57,23 +96,12 @@ export function useChatApi() {
     setError(null)
 
     try {
-      const response = await fetch(`${API_URL}/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: content,
-          session_id: sessionId,
-          company_id: COMPANY_ID,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`)
-      }
-
-      const data: ChatResponse = await response.json()
+      // Use the API client which handles auth automatically
+      const data: ChatResponse = await api.sendMessage(
+        content,
+        sessionId || undefined,
+        api.getAccessToken() ? undefined : COMPANY_ID // Only send company_id if not authenticated
+      )
 
       // Update state with response
       setSessionId(data.session_id)
@@ -124,5 +152,7 @@ export function useChatApi() {
     phase,
     error,
     resetChat,
+    sessionId,
+    loadConversation,
   }
 }

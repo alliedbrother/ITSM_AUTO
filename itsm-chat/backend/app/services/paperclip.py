@@ -147,6 +147,56 @@ def get_issue_url(identifier: str) -> str:
     return f"{settings.itsm_base_url}/issues/{identifier}"
 
 
+async def get_issue_details(issue_id) -> Dict[str, Any]:
+    """Fetch details for a specific issue from Paperclip.
+
+    Args:
+        issue_id: The issue UUID
+
+    Returns:
+        Issue details from the API
+    """
+    settings = get_settings()
+
+    headers: Dict[str, str] = {"Content-Type": "application/json"}
+    if settings.paperclip_api_token:
+        headers["Authorization"] = f"Bearer {settings.paperclip_api_token}"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.paperclip_api_url}/api/companies/{settings.default_company_id}/issues/{issue_id}",
+            headers=headers,
+            timeout=30.0
+        )
+        response.raise_for_status()
+        return response.json()
+
+
+async def get_issue_activity(issue_id) -> List[Dict[str, Any]]:
+    """Fetch activity log for a specific issue from Paperclip.
+
+    Args:
+        issue_id: The issue UUID
+
+    Returns:
+        List of activity entries
+    """
+    settings = get_settings()
+
+    headers: Dict[str, str] = {"Content-Type": "application/json"}
+    if settings.paperclip_api_token:
+        headers["Authorization"] = f"Bearer {settings.paperclip_api_token}"
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{settings.paperclip_api_url}/api/companies/{settings.default_company_id}/issues/{issue_id}/activity",
+            headers=headers,
+            timeout=30.0
+        )
+        response.raise_for_status()
+        return response.json()
+
+
 def clear_cache():
     """Clear the agents and projects cache."""
     global _agents_cache, _projects_cache

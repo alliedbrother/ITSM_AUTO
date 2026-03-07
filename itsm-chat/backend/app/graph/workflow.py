@@ -1,6 +1,7 @@
 """Task-type aware workflow for issue creation with complete information gathering."""
 
 from typing import Optional, List, Dict, Any
+from uuid import UUID
 
 from ..schemas.state import (
     ConversationState, ChatResponse, QuickReply,
@@ -15,17 +16,56 @@ from ..services.llm import extract_issue_info, generate_confirmation_message
 from .edges import should_create_issue, should_modify_issue, parse_priority_from_input
 
 
+async def track_user_issue(
+    user_id: str,
+    issue_id: str,
+    issue_identifier: str,
+    issue_title: str
+) -> None:
+    """Track a created issue for an authenticated user.
+
+    Args:
+        user_id: UUID of the user
+        issue_id: UUID of the created issue
+        issue_identifier: Issue identifier (e.g., "AUT-25")
+        issue_title: Title of the issue
+    """
+    from ..config.database import get_db_context
+    from ..services.issue_tracker import track_issue
+    from ..schemas.issue import UserIssueCreate
+
+    try:
+        async with get_db_context() as db:
+            issue_data = UserIssueCreate(
+                issue_id=UUID(issue_id),
+                issue_identifier=issue_identifier,
+                issue_title=issue_title,
+                issue_status="todo"
+            )
+            await track_issue(db, UUID(user_id), issue_data)
+    except Exception as e:
+        # Log but don't fail the request if tracking fails
+        print(f"Failed to track issue for user {user_id}: {e}")
+
+
 async def process_message(
     message: str,
     session_id: Optional[str],
-    company_id: str
+    company_id: str,
+    user_id: Optional[str] = None
 ) -> ChatResponse:
     """Process a user message through the conversation flow.
 
     This is the main entry point for handling chat messages.
+
+    Args:
+        message: The user's message
+        session_id: Optional session ID to resume
+        company_id: Company ID for the request
+        user_id: Optional user ID for authenticated users
     """
     # Get or create session
-    state = get_or_create_session(session_id, company_id)
+    state = await get_or_create_session(session_id, company_id, user_id)
 
     # Add user message
     messages = state.get("messages", []).copy()
@@ -45,17 +85,17 @@ async def process_message(
 
     elif current_phase == "confirm":
         # User is responding to confirmation
-        state = await handle_confirmation(state, message, company_id)
+        state = await handle_confirmation(state, message, company_id, user_id)
 
     elif current_phase in ["done", "error"]:
         # Start a new conversation
-        state = get_or_create_session(None, company_id)
+        state = await get_or_create_session(None, company_id, user_id)
         messages = [{"role": "user", "content": message}]
         state["messages"] = messages
         state = await run_initial_flow(state, company_id)
 
     # Save updated state
-    save_session(state)
+    await save_session(state)
 
     # Build response
     return build_response(state)
@@ -283,7 +323,12 @@ async def handle_clarification(state: ConversationState, user_input: str, compan
     return state
 
 
-async def handle_confirmation(state: ConversationState, user_input: str, company_id: str) -> ConversationState:
+async def handle_confirmation(
+    state: ConversationState,
+    user_input: str,
+    company_id: str,
+    user_id: Optional[str] = None
+) -> ConversationState:
     """Handle user response during confirmation phase."""
     messages = state.get("messages", [])
     extracted = state.get("extracted", {})
@@ -306,6 +351,15 @@ async def handle_confirmation(state: ConversationState, user_input: str, company
                 title=issue_data["title"],
                 url=get_issue_url(issue_data["identifier"])
             )
+
+            # Track issue for authenticated users
+            if user_id:
+                await track_user_issue(
+                    user_id=user_id,
+                    issue_id=issue_data["id"],
+                    issue_identifier=issue_data["identifier"],
+                    issue_title=issue_data["title"]
+                )
 
             agent_name = extracted.get("assignee_agent_name", "the team")
             success_msg = f"""Your issue has been created successfully!
